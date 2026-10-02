@@ -12,3 +12,5 @@
 - [x] **Metrik dan penghapusan ADMIN** — Indikator persentase statis `+12%` dan `+8%` dihapus; ADMIN dapat menghapus laporan melalui tombol berkonfirmasi, handler Supabase, dan policy RLS `reports_admin_delete`.
 
 - [x] **Sinkronisasi metrik ADMIN dan OB** — Jumlah tugas aktif per OB, progress operasional, total selesai, dan indikator rating tidak lagi memakai angka statis; saat tidak ada laporan nilainya menjadi 0 atau belum ada data.
+
+- [x] **Foto before permanen** — Foto before pada laporan baru wajib dipilih, diunggah ke Supabase Storage, dan URL permanennya disimpan di `photo_before_url`; laporan lama dengan blob URL menampilkan fallback “Foto belum tersedia”.

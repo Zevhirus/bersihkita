@@ -75,9 +75,10 @@ function App() {
   const showToast = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 3600) }
   const closeDetail = () => setSelectedReport(null)
   const updateReport = (id: string, patch: Partial<Report>) => setReports(current => current.map(report => report.id === id ? { ...report, ...patch, updatedAt: new Date().toISOString() } : report))
-  const handleNewReport = async (data: { location: string; category: string; description: string; photoBeforeUrl: string }) => {
+  const handleNewReport = async (data: { location: string; category: string; description: string; photoBefore: File }) => {
     if (!identity) return
-    const result = await submitReport({ userId: identity.userId, location: data.location, category: data.category, description: data.description, photoBeforeUrl: data.photoBeforeUrl })
+    const photoBeforeUrl = await uploadReportPhoto(data.photoBefore, identity.userId)
+    const result = await submitReport({ userId: identity.userId, location: data.location, category: data.category, description: data.description, photoBeforeUrl })
     if (result.error) throw result.error
     setReports(await fetchReportsForIdentity(identity)); setShowNewReport(false); showToast('Laporan tersimpan di Supabase. Status: menunggu verifikasi.')
   }

@@ -62,4 +62,7 @@ public/manus-routes.json
 ADMIN memiliki tombol **Hapus laporan** pada detail laporan. Aksi meminta konfirmasi sebelum menghapus permanen. Policy RLS `reports_admin_delete` memastikan hanya role `admin` yang dapat melakukan penghapusan.
 
 Jika database sudah dibuat sebelum fitur ini ditambahkan, jalankan [`supabase/migrations/20261002_admin_delete.sql`](./supabase/migrations/20261002_admin_delete.sql) sekali di Supabase SQL Editor. `supabase/schema.sql` juga sudah memuat policy tersebut untuk instalasi baru.
-# bersihkita
+
+## Foto before/after
+
+Foto before pada laporan baru wajib dipilih dan diunggah ke bucket `report-photos` sebelum record laporan dibuat. Foto after OB memakai bucket yang sama. Dengan begitu foto tetap tampil setelah refresh atau login dari perangkat lain; laporan lama yang menyimpan `blob:` URL perlu dibuat ulang atau dihapus karena URL tersebut hanya valid pada browser asal.
