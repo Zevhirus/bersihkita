@@ -1,0 +1,55 @@
+-- =====================================================
+-- SEED AKUN DEMO — jalankan SETELAH schema.sql
+-- Supabase Dashboard > SQL Editor. Aman dijalankan berulang.
+-- UNTUK DEVELOPMENT SAJA: ganti/hapus akun ini sebelum produksi.
+-- =====================================================
+create extension if not exists pgcrypto;
+
+do $$
+declare
+  acc record;
+  uid uuid;
+begin
+  for acc in
+    select * from (values
+      ('admin@lapor.test',  'Admin@12345',   'Administrator',   'admin'),
+      ('ob1@lapor.test',    'Petugas@12345', 'Budi (OB)',       'ob'),
+      ('ob2@lapor.test',    'Petugas@12345', 'Siti (OB)',       'ob'),
+      ('umum1@lapor.test',  'Pelapor@12345', 'Andi Pelapor',    'umum'),
+      ('umum2@lapor.test',  'Pelapor@12345', 'Rina Pelapor',    'umum')
+    ) as t(email, pass, full_name, role)
+  loop
+    select id into uid from auth.users where email = acc.email;
+
+    if uid is null then
+      uid := gen_random_uuid();
+      insert into auth.users (
+        instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+        raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+        confirmation_token, recovery_token, email_change_token_new, email_change
+      ) values (
+        '00000000-0000-0000-0000-000000000000', uid, 'authenticated', 'authenticated',
+        acc.email, crypt(acc.pass, gen_salt('bf')), now(),
+        '{"provider":"email","providers":["email"]}',
+        jsonb_build_object('full_name', acc.full_name),
+        now(), now(), '', '', '', ''
+      );
+
+      insert into auth.identities (
+        id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at
+      ) values (
+        gen_random_uuid(), uid, uid::text, 'email',
+        jsonb_build_object('sub', uid::text, 'email', acc.email, 'email_verified', true),
+        now(), now(), now()
+      );
+    end if;
+
+    -- trigger handle_new_user sudah membuat profil 'umum'; set role & nama sesuai seed
+    update public.profiles set role = acc.role, full_name = acc.full_name where user_id = uid;
+  end loop;
+end $$;
+
+-- Cek hasil
+select u.email, p.full_name, p.role
+from auth.users u join public.profiles p on p.user_id = u.id
+where u.email like '%@lapor.test' order by p.role, u.email;
